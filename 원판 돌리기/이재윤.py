@@ -1,3 +1,5 @@
+// 푸는 중 
+
 N, M, T = map(int, input().split())
 
 board = []
