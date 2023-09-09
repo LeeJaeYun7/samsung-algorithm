@@ -1,52 +1,67 @@
+import sys
 
-r,c,m = map(int, input().split())
+dx = [-1,1,0,0]
+dy = [0,0,1,-1]
+dirs = [1,0,3,2]
 
-sharks = []
-for _ in range(m): # 상어의 정보
-    sharks.append(list(map(int, input().split())))
-    # (r,c), s, d, z 
-    # 위치x y , 속력, 이동방향, 크기
-    # d = 상 하 우 좌 1 2 3 4
+def move_shark(r, c, d, s):
+    if 0 < s * dx[d] + r <= R and 0 < s * dy[d] + c <= C:
+        return (s * dx[d] + r, s * dy[d] + c, d)
 
-array = [[0 for _ in range(c+1)] for _ in range(r+1)]
+    if d == 0:
+        s += (R-r)
+    elif d == 1:
+        s += r-1
+    elif d == 2:
+        s += c-1
+    elif d == 3:
+        s += (C - c)
 
-# 격자에 상어 배치
-for shark in sharks:
-    array[shark[0]][shark[1]] = [shark[2],shark[3],shark[4]] # (속력, 이동방향, 크기)
+    if d == 2 or d == 3:
+        k = (s-1) // (C-1)
+        go = (s - k * (C - 1)) % C
+    else:
+        k = (s-1) // (R-1)
+        go = (s - k * (R - 1)) % R
+        
+    if k % 2 == 1: # 홀수번째면 방향 변경
+        d = dirs[d]
+        
+    if d == 0: r = R
+    elif d == 1: r = 1
+    elif d == 2: c = 1
+    else: c = C
+        
+    r += dx[d] * go
+    c += dy[d] * go
+    
+    return (r, c, d)
 
-def move():
-    dx = [-1,1,0,0]
-    dy = [0,0,1,-1]
-    for x in range(1, r+1):
-        for y in range(1, c+1):
-            if array[x][y]: # 현재 칸에 상어가 있으면
-                s, d, z = array[x][y] # 속력, 이동방향, 크기
-                nx = x + dx[d-1]*s
-                ny =  y + dy[d-1]*s
-                if nx > r: nx %= r
-                if ny > c: ny %= c
-
-                if not array[nx][ny]: # 이동할 칸이 빈칸이면
-                    array[nx][ny] = array[x][y] # 상어 이동
-
-                elif array[nx][ny][2] < array[x][y][2]: # 새로운상어가 더 큰 경우
-                    array[nx][ny] = array[x][y] # 상어 이동
-                array[x][y] = 0
-
-
-ans = 0 # 낚시왕이 잡은 상어 크기의 합
-for cc in range(1, c+1): # 낚시왕이 첫번째 열부터 마지막 열까지 이동
-    print("@@@", cc, "초 @@@")
-    # 1.낚시왕이 오른쪽으로 한 칸 이동한다.
-    # 2.낚시왕이 있는 열에 있는 상어 중에서 땅과 제일 가까운 상어를 잡는다. 
-    for rr in range(1, r+1):
-        if array[rr][cc]: 
-            ans += array[rr][cc][2] 
-            print("잡은 상어 크기",array[rr][cc][2])
-            array[rr][cc] = 0 # 상어가 사라진다.
-
-    move() # 3. 상어가 이동한다. 
-    print("상어 이동 완료")
-    print(array)
-
+# Main 파트
+R, C, M = map(int, input().split())
+shark = [[[] for _ in range (C+1)] for _ in range(R+1)]
+for _ in range(M):
+    r, c, s, d, z = map(int, input().split())
+    shark[r][c] = [s, d-1, z]
+    
+ans = 0
+for i in range(1, C+1):
+    for j in range(1, R+1):
+        if shark[j][i]:
+            ans += shark[j][i][2]
+            shark[j][i] = []
+            break
+            
+    temp = [[[] for _ in range (C+1)] for _ in range(R+1)]
+    for r in range(1, R+1):
+        for c in range(1, C+1):
+            if not shark[r][c]: continue
+            r_, c_, d_ = move_shark(r, c, shark[r][c][1], shark[r][c][0])
+            if temp[r_][c_] and temp[r_][c_][2] > shark[r][c][2]:
+                continue
+            temp[r_][c_] = shark[r][c]
+            temp[r_][c_][1] = d_
+            
+    shark = temp
+    
 print(ans)
