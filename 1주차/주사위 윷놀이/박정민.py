@@ -17,24 +17,28 @@ score = [0, 2, 4, 6, 8,
          30, 35, 0]
 
 answer=0
-def dfs(depth,result,horses):
+score = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 13, 16, 19, 25, 22, 24, 28, 27, 26, 30, 35, 0]
+dice = list(map(int, input().split()))
+answer = 0
+def dfs(loc, result, horse, test):
     global answer
-
-    if depth==10:
-        answer=max(answer,result)
+    if loc >= 10:
+        answer = max(answer, result)
         return
-
     for i in range(4):
-
-        current=horses[i] #현재 말위치
-
-        if len(graph[current])==2: # 두갈래길
-            current=graph[current][1]
+        x = horse[i]
+        if len(graph[x]) == 2:
+            x = graph[x][1]
         else:
-            current=graph[current][0]
-
-
-
-
-
-dfs(0,0,[0,0,0,0])
+            x = graph[x][0]
+        for j in range(1, dice[loc]):
+            x = graph[x][0]
+        if x == 32 or (x < 32 and x not in horse):
+            before = horse[i]
+            horse[i] = x
+            test.append(x)
+            dfs(loc + 1, result+score[x],horse, test)
+            test.pop()
+            horse[i] = before
+dfs(0, 0, [0,0,0,0], [])
+print(answer)
