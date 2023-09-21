@@ -13,20 +13,16 @@ for i in range(4):
 
 def moveFish(currX, currY, currDir):
     for fish in sorted(fishes): # 물고기 번호순
-        print(fish,"번 물고기 이동")
         fishX, fishY, fishDir = fishes[fish]
-        print("위치", fishX,fishY, "방향",fishDir)
 
         for i in range(8): # 방향 이동하며 될때까지
             nx = fishX + dx[(fishDir)%8] 
             ny = fishY + dy[(fishDir)%8] 
-            print(nx,ny,"칸 탐색중")
             if nx<0 or nx>=4 or ny<0 or ny>=4 or (nx == currX and ny == currY):
                 fishDir += 1
                 continue
                 
             else: 
-                print(board[nx][ny],"물고기가 있던," ,nx,ny, " 칸으로 이동")
                 old = board[nx][ny] # 이동할 칸의 물고기 번호
                 board[nx][ny] = board[fishX][fishY] # 현재 물고기 한칸 이동
                 fishes[fish][0], fishes[fish][1] = nx,ny # 현재 물고기 정보 업데이트
