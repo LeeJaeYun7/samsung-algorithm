@@ -1,3 +1,6 @@
+from collections import deque 
+import copy
+
 N, Q = map(int, input().split())
 
 board = [] 
@@ -11,43 +14,79 @@ magics = list(map(int, input().split()))
 dx = [-1, 0, 1, 0]
 dy = [0, 1, 0, -1]
 
+biggestIce = 0
+iceCnt = 0 
 
-def rotate(sx, sy, divideLen):
+visited = [[False]*(2**N) for _ in range(2**N)]
+
+
+def rotate(sx, sy, divideLen, tmpBoard):
     
     
     cnt = divideLen // 2 
-    
-    tmpBoard = [[0]*2**N for _ in range(2**N)]
     
     
     for i in range(cnt):
     
         x = sx + i
         y = sy + i 
-        dir = 1 
+        dir1 = 1 
+        
+        len = divideLen-2*i
+        cnt = divideLen-2*i-1
+    
+        csx = x
+        csy = y 
         
     
         while True:
             
-            nx = x + dx[dir]
-            ny = y + dy[dir]
+            move = 0 
+            dir2 = dir1 
             
-            if sx+i<=nx and nx<sx+i+(divideLen//(i+1)) and sy+i<=ny and ny<sy+i+(divideLen//(i+1)):
-                tmpBoard[nx][ny] = board[x][y]
-                x = nx
-                y = ny 
-            else:
-                dir = (dir+1) % 4
+            cx = csx
+            cy = csy 
+            
+            
+            while move != cnt:
                 
-                nx = x + dx[dir]
-                ny = y + dy[dir]
+                nx = cx + dx[dir2]
+                ny = cy + dy[dir2]
+            
+            
+                if sx+i<=nx and nx<sx+i+len and sy+i<=ny and ny<sy+i+len:
+                    cx = nx
+                    cy = ny 
+                else:
+                    dir2 = (dir2+1) % 4
                 
-                tmpBoard[nx][ny] = board[x][y]
-        
-                x = nx
-                y = ny 
+                    nx = cx + dx[dir2]
+                    ny = cy + dy[dir2]
+                
+                    cx = nx
+                    cy = ny 
+                
+                move +=1 
+                
+                
+            tmpBoard[cx][cy] = board[csx][csy]
+                
                     
-            if x == (sx+i) and y == (sy+i):
+            ncsx = csx + dx[dir1]
+            ncsy = csy + dy[dir1]
+            
+            if sx+i<=ncsx and ncsx<sx+i+len and sy+i<=ncsy and ncsy<sy+i+len:
+                csx = ncsx
+                csy = ncsy 
+            else:
+                dir1 = (dir1+1) % 4
+                ncsx = csx + dx[dir1]
+                ncsy = csy + dy[dir1]
+                
+                csx = ncsx
+                csy = ncsy
+                
+            if csx == x and csy == y:
                 break
             
     
@@ -57,9 +96,9 @@ def rotate(sx, sy, divideLen):
             board[i][j] = tmpBoard[i][j]
     
     
-def melt():
+def melt(tmpBoard):
     
-    tmpBoard = [[0]*2**N for _ in range(2**N)]
+    global board
     
     
     for i in range(0, 2**N):
@@ -82,11 +121,11 @@ def melt():
                 tmpBoard[i][j] = ice
                 continue
             else:
-                tmpBoard[i][j] = ice - 1 
+                if ice >= 1:
+                    tmpBoard[i][j] = ice - 1 
                 
-    for i in range(0, 2**N):
-        for j in range(0, 2**N):
-            board[i][j] = tmpBoard[i][j]
+                
+    board = copy.deepcopy(tmpBoard)
             
             
             
@@ -104,71 +143,68 @@ def getIceSum():
 
 
 
-def divide(x, y, boardLen, divideLen):
+def divide(x, y, boardLen, divideLen, tmpBoard):
     
     
     if boardLen == divideLen:
-        rotate(x, y, divideLen)
+        rotate(x, y, divideLen, tmpBoard)
         return 
     
     
-    divide(x, y, boardLen//2, divideLen)
-    divide(x+boardLen//2, y, boardLen//2, divideLen)
-    divide(x, y+boardLen//2, boardLen//2, divideLen)
-    divide(x+boardLen//2, y+boardLen//2, boardLen//2, divideLen)
+    divide(x, y, boardLen//2, divideLen, tmpBoard)
+    divide(x+boardLen//2, y, boardLen//2, divideLen, tmpBoard)
+    divide(x, y+boardLen//2, boardLen//2, divideLen, tmpBoard)
+    divide(x+boardLen//2, y+boardLen//2, boardLen//2, divideLen, tmpBoard)
     
 
 
 for L in magics:
-    print("이전")
     
-    for i in range(2**N):
-        for j in range(2**N):
-            print(board[i][j], end=' ')
-        print('', end='\n')
-    print('', end='\n')
     
     if L != 0:
-        divide(0, 0, 2**N, 2**L)    
-        
+        tmpBoard = [[0]*(2**N) for _ in range(2**N)]
+        divide(0, 0, 2**N, 2**L, tmpBoard)    
     
-    print("이후")
-    
-    for i in range(2**N):
-        for j in range(2**N):
-            print(board[i][j], end=' ')
-        print('', end='\n')
-    print('', end='\n')
-        
-    
-    melt()
-    
-     
-    print("녹은 이후")
-    
-    for i in range(2**N):
-        for j in range(2**N):
-            print(board[i][j], end=' ')
-        print('', end='\n')
-    print('', end='\n')
-    
-    
+    tmpBoard = [[0]*(2**N) for _ in range(2**N)]    
+    melt(tmpBoard)
     total = getIceSum()
+
+
     
-    print("total은?")
-    print(total)
+total = getIceSum()
+
+
+def bfs(x, y, visited):
     
+    global iceCnt 
+    
+    visited[x][y] = True
+    iceCnt += 1
+    q = deque()
+    q.append([x,y])
+    
+    while q:
+        x, y = q.popleft()
+        
+        for i in range(4):
+            nx = x + dx[i]
+            ny = y + dy[i]
+            
+            if 0<=nx and nx<2**N and 0<=ny and ny<2**N and board[nx][ny] != 0 and visited[nx][ny] == False:
+                visited[nx][ny] = True
+                iceCnt += 1 
+                q.append([nx, ny])
+    
+
 
 for i in range(2**N):
     for j in range(2**N):
-        print(board[i][j], end=' ')
-    print('', end='\n')
-    
-    
-    
-total = getIceSum()
+        if board[i][j] != 0 and visited[i][j] == False:
+            iceCnt = 0 
+            bfs(i, j, visited)
+            biggestIce = max(biggestIce, iceCnt)
+
+
     
 print(total) 
-
-
-
+print(biggestIce)
