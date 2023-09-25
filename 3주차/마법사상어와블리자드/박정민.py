@@ -1,7 +1,7 @@
 from collections import deque
 
 N,M=map(int,input().split())
-
+score=[0]*3
 board=[list(map(int,input().split())) for _ in range(N)]
 cmd=[]
 for i in range(M):
@@ -49,9 +49,9 @@ def magic(d,dist):
         ny=y+dy[d]
         if 0<=nx<N and 0<=ny<N:
             board[nx][ny]=0
-    
+
     blank()
-    
+
 
 
 
@@ -67,9 +67,39 @@ def blank():
             board[nx][ny]=board[x][y]
             board[x][y]=0
             blankIdx.append((x,y))
-            
+
 def bomb():
-    
+    v=deque()
+    cnt=1
+
+    num=board_index[0][0]
+
+    for x,y in board_index:
+
+        if x== N//2 and y==(N//2)-1:
+            continue
+
+        if num==board[x][y]:
+            v.append((x,y))
+            cnt+=1
+        else:
+            if cnt>=4:
+                score[num-1]+=cnt
+
+            while v:
+                nx,ny=v.popleft()
+                if cnt>=4:
+                    board[nx][ny]=0
+
+
+            num=board[x][y]
+            cnt=1
+
+
+
+
+
+
 
 
 
