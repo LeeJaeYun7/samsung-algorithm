@@ -16,6 +16,15 @@ for i in range(len(C)):
 
 
 
+def printMap():
+    
+    for i in range(N):
+        for j in range(N):
+            print(A[i][j], end=' ')
+        print('', end='\n')
+    print('', end='\n')
+
+
 
 def doFirst():
     
@@ -52,24 +61,33 @@ def doSecond():
             if curr+height+1 >= N:
                 break
             
-            r = 0
+            r = 1
             c = height + 1 
+            
+            ## print("curr, height는?")
+            ## print(curr, height)
+            ## print("r, c는?")
+            ## print(r, c)
+            ## print("", end='\n')
             
             dist = 0 
             finalDist = 0 
             
             for i in range(height, -1, -1):
                 
-                initR = r
+                initR = 1
                 initC = c 
                 targetC = curr+c
+                
+                ## print("initR, initC, targetC는?")
+                ## print(initR, initC, targetC)
                 
                 for j in range(curr, -1, -1):
                     
                     
                     if A[i][j] != 0:
                         dist += 1 
-                        A[i][j], A[i+initR][targetC] = A[i+initR][targetC], A[i][j]
+                        A[i][j], A[initR][targetC] = A[initR][targetC], A[i][j]
                         initR += 1 
                     
                     else:
@@ -185,26 +203,40 @@ def doSix():
 
 cnt = 0     
 
+
 while True: 
     
     cnt += 1 
     
     doFirst() 
     
-    doSecond() 
+    ## printMap()
+    
+    doSecond()
+    
+    ## printMap()
     
     doThird() 
+    
+    ## printMap()
 
-    doFourth() 
+    doFourth()
+    
+    ## printMap()
     
     doFifth() 
     
+    ## printMap()
+    
     doThird()
     
-    doFourth() 
-
+    ## printMap()
     
+    doFourth()
     
+    ## printMap()
+    
+   
     gap = doSix() 
         
     if gap <= K:
@@ -213,9 +245,3 @@ while True:
     
     
 print(cnt) 
-
-
-
-
-
-
