@@ -1,0 +1,228 @@
+from collections import deque 
+
+n, m = map(int, input().split())
+
+dx = [-1, 0, 0, 1]
+dy = [0, -1, 1, 0]
+
+board = [] 
+stores = [] 
+unables = [] 
+
+arrived = [0]*(m+1)
+
+unableBaseCamps = [] 
+
+personVisited = [[False]*n for _ in range(n)]
+peopleVisited = []
+peopleVisited.append(personVisited)
+qInfos = []
+initQ = deque()
+qInfos.append(initQ)
+
+for i in range(n):
+    row = list(map(int, input().split()))
+    board.append(row)
+
+
+for i in range(n):
+    for j in range(n):
+        if board[i][j] == 1:
+            stores.append([i, j])
+
+    
+wantStores = []
+peopleStart = [] 
+peopleStart.append([0, 0]) 
+wantStores.append([0, 0])
+
+
+for i in range(m):
+    a, b = map(int, input().split())
+    wantStores.append([a-1, b-1])
+    
+    
+    
+def nearestStore(a, b):
+    
+    visited = [[False]*n for _ in range(n)]
+    q = deque() 
+    
+    visited[a][b] = True
+    q.append([a,b,0])
+    
+    distInfo = []
+    
+    while q:
+        
+        x, y, dist = q.popleft() 
+        
+        if board[x][y] == 1:
+            if [x, y] in unableBaseCamps:
+                continue
+            else:
+                distInfo.append([x,y,dist])
+        
+        for i in range(4):
+            nx = x + dx[i]
+            ny = y + dy[i]
+            
+            if 0<=nx and nx<n and 0<=ny and ny<n and visited[nx][ny] == False:
+                visited[nx][ny] = True
+                q.append([nx, ny, dist+1])
+    
+    
+    minDist = int(1e9)
+    minDistInfo = [] 
+    
+    for i in range(len(distInfo)):
+        if distInfo[i][2] < minDist:
+            minDist = distInfo[i][2]
+            
+    for i in range(len(distInfo)):
+        if distInfo[i][2] == minDist:
+            minDistInfo.append(distInfo[i])
+    
+    if len(minDistInfo) == 1:
+        return minDistInfo
+        
+        
+    minRow = int(1e9)
+    minRowInfo = [] 
+    
+    for i in range(len(minDistInfo)):
+        if minDistInfo[i][0] < minRow:
+            minRow = minDistInfo[i][0] 
+            
+    for i in range(len(minDistInfo)):
+        if minDistInfo[i][0] == minRow:
+            minRowInfo.append(minDistInfo[i])
+         
+    if len(minRowInfo) == 1:
+        return minRowInfo 
+            
+            
+    minCol = int(1e9)
+    minColInfo = [] 
+    
+    for i in range(len(minRowInfo)):
+        if minRowInfo[i][1] < minCol:
+            minCol = minRowInfo[i][1] 
+            
+    
+    for i in range(len(minRowInfo)):
+        if minRowInfo[i][1] == minCol:
+            minColInfo.append(minRowInfo[i])
+            
+            
+    return minColInfo 
+    
+
+
+def bfs(q, visited, targetX, targetY):
+    
+    global unables
+
+    res = False 
+    
+    for a, b in unables:
+        visited[a][b] = True
+        
+
+        
+    lenQ = len(q)
+
+    for i in range(lenQ):
+        
+        x, y = q.popleft() 
+        
+        for j in range(4):
+            nx = x + dx[j]
+            ny = y + dy[j]
+            
+            if 0<=nx and nx<n and 0<=ny and ny<n and visited[nx][ny] == False:
+                visited[nx][ny] = True
+                q.append([nx, ny])
+                if nx == targetX and ny == targetY:
+                    res = True 
+                
+    return q, visited, res             
+    
+    
+        
+    
+
+time = 0 
+
+
+while True:
+
+
+    time += 1 
+    
+
+    ## step1
+        
+    for i in range(len(peopleStart)):
+        if i!= 0 and i == time-1:
+            x = peopleStart[i][0]
+            y = peopleStart[i][1] 
+            
+            startQ = deque() 
+            startQ.append([x,y])
+            personVisited = [[False]*n for _ in range(n)]
+            targetX = wantStores[i][0]
+            targetY = wantStores[i][1]
+            q, visited, res = bfs(startQ, personVisited, targetX, targetY)
+            
+            qInfos.append(q)
+            peopleVisited.append(visited)
+            if res == True:
+                arrived[i] = 2
+          
+    for i in range(1, len(qInfos)):
+        if time-i>= 2 and arrived[i] == False:
+            startQ = qInfos[i]
+            personVisited = peopleVisited[i]
+            targetX = wantStores[i][0]
+            targetY = wantStores[i][1]
+            
+            q, visited, res = bfs(startQ, personVisited, targetX, targetY)
+            qInfos[i] = q
+            peopleVisited[i] = visited 
+            if res == True:
+                arrived[i] = 2
+    
+    ## step2
+    
+    for i in range(1, m+1):
+        if arrived[i] == 2:
+            arrived[i] = 1 
+            x = wantStores[i][0]
+            y = wantStores[i][1]
+            unables.append([x,y])
+
+
+    cnt = 0
+    
+    for i in range(1, m+1):
+        if arrived[i] == 1:
+            cnt += 1 
+
+    if cnt == m:
+        break 
+          
+          
+    ## step3 
+    if time <= m:
+        a, b = wantStores[time][0], wantStores[time][1] 
+    
+        distInfo = nearestStore(a, b)
+    
+        peopleStart.append([distInfo[0][0], distInfo[0][1]])
+        unables.append([distInfo[0][0], distInfo[0][1]])
+        unableBaseCamps.append([distInfo[0][0], distInfo[0][1]])
+    
+    
+    
+print(time)    
